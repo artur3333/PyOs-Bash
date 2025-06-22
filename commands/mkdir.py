@@ -1,13 +1,17 @@
-import os
-import state
-import filesystem
+# Command for creating directories
+# Usage: mkdir <directory_name1> <directory_name2> ...
 
-def run(args, current_dir):
-    if args:
-        new_dir = filesystem.abs_path(args[0])
+import os
+
+def run(args, fs):
+    if not args:
+        print("Missing operand.")
+        return
+    
+    for name in args:
+        new_dir = fs.abs_path(name)
         if not os.path.exists(new_dir):
             os.makedirs(new_dir)
+
         else:
-            print(f"A subdirectory or file '{args[0]}' already exists.")
-    else:
-        print("The syntax of the command is incorrect.")
+            print(f"A subdirectory or file '{name}' already exists.")

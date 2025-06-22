@@ -1,6 +1,6 @@
-import os
-import filesystem
+# Command to change the current working directory
+# Usage: cd <directory>
 
-def run(args, current_dir):
+def run(args, fs):
     if args:
-        filesystem.change_directory(args[0])
+        fs.change_directory(args[0])
