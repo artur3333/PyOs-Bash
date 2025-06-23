@@ -38,7 +38,7 @@ def boot():
     
     progress_bar()
     
-    print("\033[1;32mPyOS Booted Successfully!\033[0m")
+    print("\033[1;32mPyOS Booted Successfully!\033[0m\n")
     time.sleep(0.5)
 
 boot()

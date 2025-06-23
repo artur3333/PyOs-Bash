@@ -18,7 +18,7 @@ def shell():
                 command = command.split()
                 command_name = command[0]
                 args = command[1:]
-                command_module = importlib.import_module(f"commands.{command_name}")
+                command_module = importlib.import_module(f"fs.bin.{command_name}")
                 command_module.run(args, fs)
                 
             except ModuleNotFoundError:
