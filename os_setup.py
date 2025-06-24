@@ -10,6 +10,7 @@ SYSTEM_CONFIG = os.path.join(FILE_SYSTEM, "etc", "system.conf")
 PASSWD_FILE = os.path.join(FILE_SYSTEM, "etc", "passwd")
 SHADOW_FILE = os.path.join(FILE_SYSTEM, "etc", "shadow")
 PERMISSIONS_FILE = os.path.join(FILE_SYSTEM, "etc", "permissions.json")
+SESSIONS_FILE = os.path.join(FILE_SYSTEM, "var", "sessions.json")
 
 def create_file_structure():
     directories = [
@@ -59,6 +60,13 @@ def create_system_config(hostname):
     with open(SYSTEM_CONFIG, 'w') as f:
         json.dump(config, f, indent=2)
 
+    print("Done.")
+
+def create_sessions_file():
+    print("\nCreating sessions file...")
+    sessions = {}
+    with open(SESSIONS_FILE, 'w') as f:
+        json.dump(sessions, f, indent=2)
     print("Done.")
 
 def hash_password(password: str) -> str:
@@ -147,11 +155,9 @@ def kernel_setup():
 def create_permissions_file(username):
     print("\nCreating permissions file...")
     permissions = {
-        "/": {"owner": "root"},
-        "/root": {"owner": "root"},
-        f"/home/{username}": {"owner": username},
-        "/bin": {"owner": "root"},
-        "/etc": {"owner": "root"},
+        "/": {"owner": "root", "access": "public"},
+        "/root": {"owner": "root", "access": "private"},
+        f"/home/{username}": {"owner": username, "access": "private"},
     }
 
     with open(PERMISSIONS_FILE, 'w') as file:
@@ -170,5 +176,6 @@ def setup():
     create_system_config(hostname)
     default_commands()
     create_permissions_file(username)
+    create_sessions_file()
     print("\nFirst boot setup complete. PyOS is ready to use!")
     time.sleep(5)

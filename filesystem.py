@@ -1,11 +1,12 @@
 import os
 import json
+import auth
 
 class FileSystem:
-    def __init__(self, user="artur33"): # TODO: make all the account management stuff
+    def __init__(self):
         self.ROOT_DIR = os.path.abspath("fs")
         self.current_dir = self.ROOT_DIR
-        self.current_user = user
+        self.current_user = "sys"
         self.hostname = "pyos"
         self.load_system_config()
     
@@ -48,10 +49,17 @@ class FileSystem:
 
     def change_directory(self, path): # Change the current directory to the specified path
         move = self.abs_path(path)
+
+        if not auth.check_permissions(move, action="read"):
+            print("Permission denied.")
+            return False
+            
         if os.path.isdir(move):
             self.current_dir = move
+            return True
         else:
-            print("No such directory")
+            print("No such directory.")
+            return False
     
     def rel_path(self, path=None): # Get the relative path from the root directory (to the specified path)
         if path is None:
@@ -81,6 +89,9 @@ class FileSystem:
         return rel
     
     def prompt(self): # Shell prompt
+        
+        self.current_user = auth.get_current_user()
+
         user_host = f"\033[38;2;30;211;154m{self.current_user}@{self.hostname}\033[0m"
         path = f"\033[36m{self.prompt_path()}\033[0m"
 
