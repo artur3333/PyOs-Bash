@@ -95,4 +95,9 @@ class FileSystem:
         user_host = f"\033[38;2;30;211;154m{self.current_user}@{self.hostname}\033[0m"
         path = f"\033[36m{self.prompt_path()}\033[0m"
 
-        return f"{user_host}:{path}$ "
+        if auth.is_current_root():
+            character = "#"
+        else:
+            character = "$"
+
+        return f"{user_host}:{path}{character} "

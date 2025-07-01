@@ -49,7 +49,8 @@ def check_module_permissions(module):
     user_commands = {
         'cd', 'ls', 'find', 'tree', 'cat', 'echo', 'mkdir',
         'rmdir', 'rm', 'cp', 'mv', 'touch', 'clear', 'logout',
-        'whoami', 'pwd', 'who', "sudo", 'passwd'
+        'whoami', 'pwd', 'who', "sudo", 'passwd', 'neofetch',
+        'nano'
     }
 
     if module.__name__.split('.')[-1] in root_commands:
