@@ -4,6 +4,7 @@ import hashlib
 import getpass
 import shutil
 import time
+import pickle
 
 FILE_SYSTEM = "fs"
 ROOT_DIR = os.path.abspath(FILE_SYSTEM)
@@ -11,6 +12,7 @@ PASSWD_FILE = os.path.join(ROOT_DIR, "etc", "passwd")
 SHADOW_FILE = os.path.join(ROOT_DIR, "etc", "shadow")
 PERMISSIONS_FILE = os.path.join(ROOT_DIR, "etc", "permissions.json")
 SESSIONS_FILE = os.path.join(ROOT_DIR, "var", "sessions.json")
+CURRENT_SESSION_FILE = os.path.join(ROOT_DIR, "var", "current_session.pkl")
 
 current_user = None
 current_uid = None
@@ -76,6 +78,46 @@ def verify_password(username, password):
     return False
 
 
+def save_session():
+    session_data = {
+        'current_user': current_user,
+        'current_uid': current_uid,
+        'is_root': is_root,
+        'login_time': time.time()
+    }
+    
+    os.makedirs(os.path.dirname(CURRENT_SESSION_FILE), exist_ok=True)
+    with open(CURRENT_SESSION_FILE, 'wb') as file:
+        pickle.dump(session_data, file)
+
+
+def load_session():
+    global current_user, current_uid, is_root
+
+    if os.path.exists(CURRENT_SESSION_FILE):
+        try:
+            with open(CURRENT_SESSION_FILE, 'rb') as file:
+                session_data = pickle.load(file)
+                
+            current_user = session_data.get('current_user')
+            current_uid = session_data.get('current_uid')
+            is_root = session_data.get('is_root', False)
+
+            if current_user != "root":
+                print(f"Welcome back, {current_user}!")
+                return True
+        
+        except:
+            os.remove(CURRENT_SESSION_FILE)
+    
+    return False
+
+
+def clear_session():
+    if os.path.exists(CURRENT_SESSION_FILE):
+        os.remove(CURRENT_SESSION_FILE)
+
+
 def log_session(username, action):
     sessions = {}
     
@@ -101,10 +143,13 @@ def log_session(username, action):
 def login():
     global current_user, current_uid, is_root
 
+    if load_session():
+        return True
+
     users = load_users()
 
     username = input("Username: ").strip()
-    
+
     if username not in users:
         print("User not found.")
         return False
@@ -119,6 +164,7 @@ def login():
     current_uid = users[username]['uid']
     is_root = (current_uid == 0)
 
+    save_session()
     log_session(username, "login")
 
     print(f"\nWelcome, {current_user}!\n")
@@ -142,8 +188,11 @@ def logout():
     current_uid = None
     is_root = False
 
+    clear_session()
+    return True
 
-'''def switch_user(username): #TODO: 'su' command
+
+def switch_user(username):
     global current_user, current_uid, is_root
 
     if current_user is None:
@@ -155,14 +204,21 @@ def logout():
         print("User not found.")
         return False
     
+    if not is_root:
+        password = getpass.getpass(f"Password for {username}: ")
+        if not verify_password(username, password):
+            print("Invalid password.")
+            return False
+    
     current_user = username
     current_uid = users[username]['uid']
     is_root = (current_uid == 0)
 
+    save_session()
     log_session(username, "switch_user")
     print(f"Switched to user {username}.")
 
-    return True'''
+    return True
 
 
 def create_user(username, password):
@@ -368,8 +424,16 @@ def list_users():
     
     print("Users:")
 
+    online_users = get_loggedin_users()
+
     for username, data in users.items():
-        print(f" - {username} (UID: {data['uid']}, Home: {rel_path(data['home'])})")
+        if username in online_users:
+            status = "Online"
+
+        else:
+            status = "Offline"
+            
+        print(f" - {username} (UID: {data['uid']}, Home: {rel_path(data['home'])}, Status: {status})")
 
     print("\nTotal Users:", len(users))
 
@@ -384,3 +448,63 @@ def get_current_uid():
 
 def is_current_root():
     return is_root
+
+
+def get_last_login(username):
+    if os.path.exists(SESSIONS_FILE):
+        with open(SESSIONS_FILE, 'r') as file:
+            sessions = json.load(file)
+        
+        if username in sessions:
+            login_sessions = []
+
+            for session in sessions[username]:
+                if session['action'] == 'login':
+                    login_sessions.append(session)
+
+            if login_sessions:
+                last_login = login_sessions[-1]
+                return last_login['timestamp']
+            
+    return 'Never'
+
+
+def get_loggedin_users():
+    if not os.path.exists(SESSIONS_FILE):
+        return []
+
+    with open(SESSIONS_FILE, 'r') as file:
+        sessions = json.load(file)
+
+    active_users = []
+
+    for username, logs in sessions.items():
+        for entry in reversed(logs):
+            if entry['action'] in ('logout', 'switch_user'):
+                break
+            if entry['action'] == 'login':
+                active_users.append(username)
+                break
+
+    return active_users
+
+
+def get_uptime():
+    if os.path.exists(CURRENT_SESSION_FILE):
+        try:
+            with open(CURRENT_SESSION_FILE, 'rb') as file:
+                session_data = pickle.load(file)
+
+            login_time = session_data.get('login_time', time.time())
+            uptime_seconds = time.time() - login_time
+
+            hours = uptime_seconds // 3600
+            minutes = (uptime_seconds % 3600) // 60
+            seconds = uptime_seconds % 60
+
+            return f"{int(hours)}h {int(minutes)}m {int(seconds)}s"
+
+        except:
+            return "0h 0m 0s"
+
+    return "0h 0m 0s"

@@ -4,6 +4,7 @@
 import os
 import sys
 import auth
+import shutil
 
 def clear_screen():
     if os.name == 'nt':
@@ -11,24 +12,56 @@ def clear_screen():
     else:
         os.system('clear')
 
-def draw_editor(content, cursor_y, cursor_x, filename, status_msg=""):
+def get_terminal_size():
+    size = shutil.get_terminal_size(fallback=(24, 80))
+    return size.lines, size.columns
+
+def draw_editor(content, cursor_y, cursor_x, filename, status_msg="", scroll_offset=0, h_scroll_offset=0):
     clear_screen()
+
+    terminal_height, terminal_width = get_terminal_size()
+    content_height = terminal_height - 6
+
+    line_num_width = max(3, len(str(len(content))))
+    content_width = terminal_width - line_num_width - 2
+
     print(f"--- PyNano: {filename} ---")
-    print("Ctrl+S = Save | Ctrl+X = Exit | ESC = Cancel")
-    print("-" * 50)
+    print("Ctrl+O = Save | Ctrl+X = Exit | Arrow keys = Navigate")
+    print("-" * terminal_width)
     
-    for i, line in enumerate(content):
-        if i == cursor_y:
-            display_line = line[:cursor_x] + "|" + line[cursor_x:]
-            print(f"{i+1:3}: {display_line}")
+    start_line = scroll_offset
+    end_line = min(start_line + content_height, len(content))
+    
+    for i in range(start_line, end_line):
+        line = content[i] if i < len(content) else ""
+        line_num = i+1
+
+        if len(line) > h_scroll_offset:
+            visible_line = line[h_scroll_offset:h_scroll_offset + content_width]
 
         else:
-            print(f"{i+1:3}: {line}")
+            visible_line = ""
+
+        if i == cursor_y:
+            relative_cursor_x = cursor_x - h_scroll_offset
+            if 0 <= relative_cursor_x <= len(visible_line):
+                line_display = visible_line[:relative_cursor_x] + "█" + visible_line[relative_cursor_x:]
+
+            else:
+                line_display = visible_line
+
+        else:
+            line_display = visible_line
+        
+        what_display = f"{line_num:>{line_num_width}}: {line_display}"
+        print(what_display[:terminal_width])
     
-    if cursor_y >= len(content):
-        print(f"{cursor_y+1:3}: |")
+    remaining_lines = content_height - (end_line - start_line)
+    for i in range(remaining_lines):
+        empty = " " * (line_num_width + 2)
+        print(empty[:terminal_width])
     
-    print("-" * 50)
+    print("-" * terminal_width)
     if status_msg:
         print(status_msg)
 
@@ -39,8 +72,29 @@ def get_input():
     try:
         if os.name == 'nt':
             import msvcrt
-            return msvcrt.getch().decode('utf-8', errors='ignore')
-        
+            while True:
+                if msvcrt.kbhit():
+                    key = msvcrt.getch()
+
+                    if key == b'\xe0' or key == b'\x00':
+
+                        if msvcrt.kbhit():
+                            special = msvcrt.getch()
+                            if special == b'H': # Up
+                                return 'UP'
+                            
+                            elif special == b'P': # Down
+                                return 'DOWN'
+                            
+                            elif special == b'M': # Right
+                                return 'RIGHT'
+                            
+                            elif special == b'K': # Left
+                                return 'LEFT'
+                            
+                    else:
+                        return key.decode('utf-8', errors='ignore')
+
         else:
             import termios, tty
             fd = sys.stdin.fileno()
@@ -48,70 +102,28 @@ def get_input():
 
             try:
                 tty.setraw(fd)
-                ch = sys.stdin.read(1)
-                return ch
-            
+                key = sys.stdin.read(1)
+                
+                if key == '\x1b':
+                    seq = sys.stdin.read(2)
+                    if seq == '[A':
+                        return 'UP'
+                    elif seq == '[B':
+                        return 'DOWN'
+                    elif seq == '[C':
+                        return 'RIGHT'
+                    elif seq == '[D':
+                        return 'LEFT'
+                    else:
+                        return 'ESC'
+                else:
+                    return key
+                
             finally:
                 termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
 
     except:
         return input("Enter command (or type text): ")
-
-def handle_special_keys():
-    try:
-        if os.name == 'nt':
-            import msvcrt
-            if msvcrt.kbhit():
-                next_char = msvcrt.getch()
-
-                if next_char in (b'\x00', b'\xe0'): # Special
-
-                    if msvcrt.kbhit():
-                        arrow_key = msvcrt.getch()
-                        if arrow_key == b'H': # Up
-                            return 'UP'
-                        
-                        elif arrow_key == b'P': # Down
-                            return 'DOWN'
-                        
-                        elif arrow_key == b'M': # Right
-                            return 'RIGHT'
-                        
-                        elif arrow_key == b'K': # Left
-                            return 'LEFT'
-        else:
-            import termios, tty, select
-            fd = sys.stdin.fileno()
-            old_settings = termios.tcgetattr(fd)
-
-            try:
-                tty.setraw(fd)
-                if select.select([sys.stdin], [], [], 0.1)[0]:
-                    next_char = sys.stdin.read(1)
-
-                    if next_char == '[':
-                        if select.select([sys.stdin], [], [], 0.1)[0]:
-                            arrow_key = sys.stdin.read(1)
-
-                            if arrow_key == 'A':
-                                return 'UP'
-                            
-                            elif arrow_key == 'B':
-                                return 'DOWN'
-                            
-                            elif arrow_key == 'C':
-                                return 'RIGHT'
-                            
-                            elif arrow_key == 'D':
-                                return 'LEFT'
-                            
-            finally:
-                termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
-
-    except:
-        pass
-    
-    return None
 
 def save_file(content, file_path):
     try:
@@ -125,10 +137,28 @@ def save_file(content, file_path):
     
     except Exception as e:
         return False, f"Error saving file: {str(e)}"
+    
+def calc_scroll_offset(cursor_y, scroll_offset, content_height):
+    if cursor_y < scroll_offset:
+        return cursor_y
+    
+    elif cursor_y >= scroll_offset + content_height:
+        return cursor_y - content_height + 1
+    
+    return scroll_offset
+
+def calc_h_scroll_offset(cursor_x, h_scroll_offset, content_width):
+    if cursor_x < h_scroll_offset:
+        return cursor_x
+    
+    elif cursor_x >= h_scroll_offset + content_width:
+        return cursor_x - content_width + 1
+    
+    return h_scroll_offset
 
 def run(args, fs):
     if not args:
-        print("Missing operand.")
+        print("Missing filename argument.")
         return
     
     filename = args[0]
@@ -154,9 +184,22 @@ def run(args, fs):
     
     cursor_y = 0
     cursor_x = 0
+    scroll_offset = 0
+    h_scroll_offset = 0
+    modified = False
     status_msg = ""
+
+    terminal_height, terminal_width = get_terminal_size()
+    content_height = terminal_height - 6
+    line_num_width = max(3, len(str(len(content))))
+    content_width = terminal_width - line_num_width - 2
     
     while True:
+        terminal_height, terminal_width = get_terminal_size()
+        content_height = terminal_height - 6
+        line_num_width = max(3, len(str(len(content))))
+        content_width = terminal_width - line_num_width - 2
+
         if cursor_y >= len(content):
             cursor_y = len(content) - 1
         if cursor_y < 0:
@@ -165,8 +208,11 @@ def run(args, fs):
             cursor_x = len(content[cursor_y])
         if cursor_x < 0:
             cursor_x = 0
+
+        scroll_offset = calc_scroll_offset(cursor_y, scroll_offset, content_height)
+        h_scroll_offset = calc_h_scroll_offset(cursor_x, h_scroll_offset, content_width)
         
-        draw_editor(content, cursor_y, cursor_x, filename, status_msg)
+        draw_editor(content, cursor_y, cursor_x, filename, status_msg, scroll_offset, h_scroll_offset)
         status_msg = ""
         
         try:
@@ -184,43 +230,54 @@ def run(args, fs):
                     status_msg = msg
                     continue
 
-                else:
-                    for char in key:
-                        line = content[cursor_y]
-                        content[cursor_y] = line[:cursor_x] + char + line[cursor_x:]
-                        cursor_x += 1
-                    continue
-            
-            # Action keys
-            if ord(key) == 24: # Ctrl+X
-                choice = input("\nSave before exit? (y/n): ").strip().lower()
-                if choice == 'y' or choice == 'yes':
-                    success, msg = save_file(content, file_path)
-                    print(msg)
-                break
-            
-            elif ord(key) == 19: # Ctrl+S
-                success, msg = save_file(content, file_path)
-                status_msg = msg
-            
-            elif ord(key) == 27: # ESC
-                next_key = handle_special_keys()
-                if next_key == 'UP' and cursor_y > 0:
+            if key == 'UP':
+                if cursor_y > 0:
                     cursor_y -= 1
                     cursor_x = min(cursor_x, len(content[cursor_y]))
-
-                elif next_key == 'DOWN' and cursor_y < len(content) - 1:
+                
+            elif key == 'DOWN':
+                if cursor_y < len(content) - 1:
                     cursor_y += 1
                     cursor_x = min(cursor_x, len(content[cursor_y]))
-
-                elif next_key == 'LEFT' and cursor_x > 0:
+                    
+            elif key == 'LEFT':
+                if cursor_x > 0:
                     cursor_x -= 1
-
-                elif next_key == 'RIGHT' and cursor_x < len(content[cursor_y]):
+                elif cursor_y > 0:
+                    cursor_y -= 1
+                    cursor_x = len(content[cursor_y])
+                
+            elif key == 'RIGHT':
+                if cursor_x < len(content[cursor_y]):
                     cursor_x += 1
+                elif cursor_y < len(content) - 1:
+                    cursor_y += 1
+                    cursor_x = 0
+            
+            # Action keys
+            elif ord(key) == 24: # Ctrl+X
+                if modified:
+                    choice = input("File has been modified. Save before exit? (y/n/cancel): ").strip().lower()
 
+                    if choice == 'y':
+                        success, msg = save_file(content, file_path)
+                        print(msg)
+                        if success:
+                            break
+                        
+                    elif choice == 'cancel':
+                        continue
+
+                    elif choice == 'n':
+                        break
                 else:
-                    status_msg = "ESC pressed - use Ctrl+X to exit"
+                    break
+            
+            elif ord(key) == 15: # Ctrl+O
+                success, msg = save_file(content, file_path)
+                status_msg = msg
+                if success:
+                    modified = False
             
             elif ord(key) == 13 or ord(key) == 10: # Enter
                 current_line = content[cursor_y]
@@ -229,36 +286,40 @@ def run(args, fs):
                 content.insert(cursor_y + 1, new_line)
                 cursor_y += 1
                 cursor_x = 0
+                modified = True
             
             elif ord(key) == 8 or ord(key) == 127: # Backspace
                 if cursor_x > 0:
                     line = content[cursor_y]
                     content[cursor_y] = line[:cursor_x-1] + line[cursor_x:]
                     cursor_x -= 1
+                    modified = True
 
                 elif cursor_y > 0:
                     cursor_x = len(content[cursor_y - 1])
                     content[cursor_y - 1] += content[cursor_y]
                     content.pop(cursor_y)
                     cursor_y -= 1
+                    modified = True
             
             elif ord(key) == 9: # Tab
                 line = content[cursor_y]
                 content[cursor_y] = line[:cursor_x] + "    " + line[cursor_x:]
                 cursor_x += 4
-            
+                modified = True
+
             elif ord(key) >= 32 and ord(key) <= 126: # Other
                 line = content[cursor_y]
                 content[cursor_y] = line[:cursor_x] + key + line[cursor_x:]
                 cursor_x += 1
-            
+                modified = True
+
             else:
                 status_msg = f"Unknown key: {ord(key)}"
         
         except KeyboardInterrupt:
-            choice = input("\nExit? (y/n): ").strip().lower()
-            if choice == 'y' or choice == 'yes':
-                break
+            print("\nUse Ctrl+X to exit")
+            status_msg = "Use Ctrl+X to exit"
 
         except Exception as e:
             status_msg = f"Error: {str(e)}"

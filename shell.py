@@ -8,9 +8,8 @@ def shell():
     while True:
         try:
             if not auth.get_current_user():
-                print("No user is currently logged in. Please log in.")
-                auth.login()
-                continue
+                if auth.login():
+                    continue
 
             command = input(fs.prompt()).strip()
             if not command:
@@ -18,6 +17,7 @@ def shell():
             
             if command == "exit":
                 print("Exiting the shell.")
+                auth.logout()
                 break
 
             try:
@@ -50,7 +50,7 @@ def check_module_permissions(module):
         'cd', 'ls', 'find', 'tree', 'cat', 'echo', 'mkdir',
         'rmdir', 'rm', 'cp', 'mv', 'touch', 'clear', 'logout',
         'whoami', 'pwd', 'who', "sudo", 'passwd', 'neofetch',
-        'nano'
+        'nano', 'uptime', 'su', 'last', 'ps', 'date'
     }
 
     if module.__name__.split('.')[-1] in root_commands:

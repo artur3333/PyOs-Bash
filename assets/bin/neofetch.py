@@ -7,6 +7,7 @@ from datetime import datetime
 import json
 import cpuinfo
 import psutil
+import auth
 
 def get_os_info():
     path = os.path.join("fs", "etc", "system.conf")
@@ -73,12 +74,16 @@ def get_memory_info():
     except Exception as e:
         return f"Error retrieving memory info: {str(e)}"
     
+def get_uptime():
+    return auth.get_uptime()
+    
 def run(args, fs):
     os_info = get_os_info()
     shell = get_shell()
     host = fs.hostname
     user = fs.current_user
     install_date = get_install_date()
+    uptime = get_uptime()
     package_count = get_package_count()
     cpu_info = get_cpu_info()
     memory_info = get_memory_info()
@@ -103,6 +108,7 @@ _____________________________
         f"OS: {os_info}",
         f"Shell: {shell}",
         f"Kernel: Python {platform.python_version()}",
+        f"Uptime: {uptime}",
         f"Installed: {install_date} ago",
         f"Packages: {package_count}",
         f"Terminal: PyOS Terminal",
