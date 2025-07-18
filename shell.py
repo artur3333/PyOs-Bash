@@ -50,7 +50,8 @@ def check_module_permissions(module):
         'cd', 'ls', 'find', 'tree', 'cat', 'echo', 'mkdir',
         'rmdir', 'rm', 'cp', 'mv', 'touch', 'clear', 'logout',
         'whoami', 'pwd', 'who', "sudo", 'passwd', 'neofetch',
-        'nano', 'uptime', 'su', 'last', 'ps', 'date'
+        'nano', 'uptime', 'su', 'last', 'ps', 'date', 'ping',
+        'wget', 'curl'
     }
 
     if module.__name__.split('.')[-1] in root_commands:
