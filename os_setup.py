@@ -11,6 +11,7 @@ PASSWD_FILE = os.path.join(FILE_SYSTEM, "etc", "passwd")
 SHADOW_FILE = os.path.join(FILE_SYSTEM, "etc", "shadow")
 PERMISSIONS_FILE = os.path.join(FILE_SYSTEM, "etc", "permissions.json")
 SESSIONS_FILE = os.path.join(FILE_SYSTEM, "var", "sessions.json")
+PACKAGES_FILE = os.path.join(FILE_SYSTEM, "var", "packages.json")
 
 def create_file_structure():
     directories = [
@@ -164,6 +165,28 @@ def create_permissions_file(username):
         json.dump(permissions, file, indent=2)
     print("Permissions file created.")
 
+def create_packages_file():
+    print("\nCreating packages JSON...")
+    packages = {}
+    
+    for package in os.listdir(os.path.join(FILE_SYSTEM, "bin")):
+        if package.endswith(".py"):
+            package_name = package[:-3] # no .py extension
+
+            packages[package_name] = {
+                "version": "1.0.0",
+                "description": f"{package_name} package",
+                "file": package,
+                "source": "default"
+            }
+
+            print(f"Registered package: {package_name}")
+    
+    with open(PACKAGES_FILE, 'w') as file:
+        json.dump(packages, file, indent=2)
+
+    print(f"Packages JSON created with {len(packages)} default packages.")
+
 def setup():
     print("\n------ First Boot Setup ------")
     print("\nRunning first boot setup...")
@@ -177,5 +200,6 @@ def setup():
     default_commands()
     create_permissions_file(username)
     create_sessions_file()
+    create_packages_file()
     print("\nFirst boot setup complete. PyOS is ready to use!")
     time.sleep(5)

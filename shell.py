@@ -1,8 +1,37 @@
 import importlib
+import os
+import sys
+import json
 from filesystem import FileSystem
 import auth
 
 fs = FileSystem()
+
+def get_installed_packages():
+    package_json = os.path.join("fs", "var", "packages.json")
+    if not os.path.exists(package_json):
+        try:
+            with open(package_json, 'r') as file:
+                packages = json.load(file)
+                return set(packages.keys())
+            
+        except (json.JSONDecodeError, IOError):
+            return set()
+    return set()
+
+def is_package_available(package_name):
+    commands = {}
+
+    if package_name in commands:
+        return True
+    
+    command_path = os.path.join("fs", "bin", f"{package_name}.py")
+    if not os.path.exists(command_path):
+        return False
+
+    installed_packages = get_installed_packages()
+
+    return package_name in installed_packages
 
 def shell():
     while True:
@@ -46,17 +75,9 @@ def check_module_permissions(module):
         'useradd', 'userdel'
     }
 
-    user_commands = {
-        'cd', 'ls', 'find', 'tree', 'cat', 'echo', 'mkdir',
-        'rmdir', 'rm', 'cp', 'mv', 'touch', 'clear', 'logout',
-        'whoami', 'pwd', 'who', "sudo", 'passwd', 'neofetch',
-        'nano', 'uptime', 'su', 'last', 'ps', 'date', 'ping',
-        'wget', 'curl'
-    }
-
-    if module.__name__.split('.')[-1] in root_commands:
+    command_name = module.__name__.split('.')[-1]
+    
+    if command_name in root_commands:
         return False
     
-    if module.__name__.split('.')[-1] in user_commands:
-        return True
-    
+    return True

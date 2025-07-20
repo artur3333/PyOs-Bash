@@ -47,5 +47,5 @@ def run(args, fs):
             print("Not a directory:", fs.rel_path(start_path))
             return
     
-    print(os.path.basename(start_path) + "/")
+    print(os.path.basename(start_path))
     print_tree(start_path)
