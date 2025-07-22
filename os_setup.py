@@ -163,7 +163,7 @@ def create_permissions_file(username):
 
     with open(PERMISSIONS_FILE, 'w') as file:
         json.dump(permissions, file, indent=2)
-    print("Permissions file created.")
+    print("Done.")
 
 def create_packages_file():
     print("\nCreating packages JSON...")
@@ -186,6 +186,7 @@ def create_packages_file():
         json.dump(packages, file, indent=2)
 
     print(f"Packages JSON created with {len(packages)} default packages.")
+    print("Done.")
 
 def setup():
     print("\n------ First Boot Setup ------")

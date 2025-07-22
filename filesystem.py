@@ -88,9 +88,32 @@ class FileSystem:
         
         return rel
     
+    def get_venv_info(self):
+        venv_file = os.path.join(self.ROOT_DIR, "var", "current_venv.json")
+        
+        if os.path.exists(venv_file):
+            try:
+                with open(venv_file, 'r') as file:
+                    data = json.load(file)
+                    return data.get("venv_name")
+                
+            except:
+                return None
+            
+        return None
+    
     def prompt(self): # Shell prompt
         
         self.current_user = auth.get_current_user()
+
+        venv_name = self.get_venv_info()
+        venv_prefix = ""
+
+        if venv_name:
+            venv_prefix = f"\033[38;2;255;165;0m({venv_name})\033[0m "
+
+        elif venv_name is None:
+            venv_prefix = ""
 
         user_host = f"\033[38;2;30;211;154m{self.current_user}@{self.hostname}\033[0m"
         path = f"\033[36m{self.prompt_path()}\033[0m"
@@ -100,4 +123,4 @@ class FileSystem:
         else:
             character = "$"
 
-        return f"{user_host}:{path}{character} "
+        return f"{venv_prefix}{user_host}:{path}{character} "
