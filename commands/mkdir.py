@@ -1,5 +1,6 @@
-# Command for creating directories
+# Command for creating directories.
 # Usage: mkdir <directory_name1> <directory_name2> ...
+# Version: 1.0.0
 
 import os
 

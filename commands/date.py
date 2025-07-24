@@ -1,5 +1,6 @@
-# Command to show the current date and time
+# Command to show the current date and time.
 # Usage: date
+# Version: 1.0.0
 
 import time
 

@@ -1,10 +1,10 @@
-# Command to display the processes running on the system
+# Command to display the processes running on the system.
 # Usage: ps [<options>]
-# For now it's a base implementation, because for now the system doesn't support processes.
+# Version: 1.0.0
 
 import os
 
-def run(args, fs):
+def run(args, fs): # For now it's a base implementation, because for now the system doesn't support processes.
     print("  PID TTY          TIME CMD")
     print("  --- ---          ---- ---")
 

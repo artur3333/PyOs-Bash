@@ -1,5 +1,6 @@
-# Command to find files and directories
+# Command to find files and directories.
 # Usage: find <name_pattern>
+# Version: 1.0.0
 
 import os
 

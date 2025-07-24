@@ -1,5 +1,6 @@
-# Command to move or rename files or directories
+# Command to move or rename files or directories.
 # Usage: mv <source> <destination>
+# Version: 1.0.0
 
 import os
 import shutil

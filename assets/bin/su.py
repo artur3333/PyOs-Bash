@@ -1,5 +1,6 @@
-# Command to switch user
+# Command to switch user.
 # Usage: su [<username>]
+# Version: 1.0.0
 
 import auth
 

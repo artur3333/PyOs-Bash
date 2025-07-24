@@ -1,5 +1,6 @@
-# Command to display system uptime
+# Command to display system uptime.
 # Usage: uptime
+# Version: 1.0.0
 
 import auth
 import time

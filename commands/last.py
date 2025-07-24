@@ -1,5 +1,6 @@
-# Command to display the last login information
+# Command to display the last login information.
 # Usage: last
+# Version: 1.0.0
 
 import auth
 import json

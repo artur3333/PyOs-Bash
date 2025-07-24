@@ -1,5 +1,6 @@
-# Command to download files from internet
+# Command to download files from internet.
 # Usage: wget [-O <output_file>, -P <directory>, -q] <url>
+# Version: 1.0.0
 
 import os
 import sys

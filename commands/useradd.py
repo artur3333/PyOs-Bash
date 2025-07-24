@@ -1,5 +1,6 @@
-# Command to add a new user
+# Command to add a new user.
 # Usage: useradd <username>
+# Version: 1.0.0
 
 import getpass
 import auth

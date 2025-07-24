@@ -165,6 +165,35 @@ def create_permissions_file(username):
         json.dump(permissions, file, indent=2)
     print("Done.")
 
+def get_info(package_path, package_name):
+    try:
+        with open(package_path, 'r') as file:
+            text = file.readlines()
+
+        description = ""
+        version = "1.0.0" # default
+
+        for line in text:
+            line = line.strip()
+
+            if line.startswith("# Command "):
+                description = line[2:].strip()
+
+            elif line.startswith("# Version: "):
+                version = line[11:].strip()
+            
+            elif line and not line.startswith("#"):
+                break
+
+        if not description:
+            description = f"{package_name} package"
+
+        return {"description": description, "version": version}
+    
+    except Exception as e:
+        print(f"Error reading package info for {package_name}: {e}")
+        return {"description": f"{package_name} package", "version": version}
+
 def create_packages_file():
     print("\nCreating packages JSON...")
     packages = {}
@@ -172,10 +201,13 @@ def create_packages_file():
     for package in os.listdir(os.path.join(FILE_SYSTEM, "bin")):
         if package.endswith(".py"):
             package_name = package[:-3] # no .py extension
+            package_path = os.path.join(FILE_SYSTEM, "bin", package)
+
+            info = get_info(package_path, package_name)
 
             packages[package_name] = {
-                "version": "1.0.0",
-                "description": f"{package_name} package",
+                "version": info.get("version"),
+                "description": info.get("description"),
                 "file": package,
                 "source": "default"
             }

@@ -1,0 +1,4 @@
+ping3==4.0.8
+psutil==6.1.0
+py_cpuinfo==9.0.0
+Requests==2.32.4

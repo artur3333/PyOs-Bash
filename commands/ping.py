@@ -1,5 +1,6 @@
-# Command to ping a host
+# Command to ping a host.
 # Usage: ping [-c <count>] <hostname>
+# Version: 1.0.0
 
 import socket
 import time

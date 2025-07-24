@@ -1,5 +1,6 @@
-# Command to display the directory tree structure
+# Command to display the directory tree structure.
 # Usage: tree [directory]
+# Version: 1.0.0
 
 import os
 

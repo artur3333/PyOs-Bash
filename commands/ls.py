@@ -1,5 +1,6 @@
-# Command to list files and directories in the current directory
+# Command to list files and directories in the current directory.
 # Usage: ls [-a]
+# Version: 1.0.0
 
 import os
 

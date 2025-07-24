@@ -1,5 +1,6 @@
-# Command to remove files or directories
+# Command to remove files or directories.
 # Usage: rm [-r] <file or directory1> <file or directory2> ...
+# Version: 1.0.0
 
 import os
 import shutil

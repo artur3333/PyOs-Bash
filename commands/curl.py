@@ -1,5 +1,6 @@
-# Command to transfer data from or to a server
+# Command to transfer data from or to a server.
 # Usage: curl [-X <method>, -H <header>, -d <data>, -o <output_file>, -i, -s] <url>
+# Version: 1.0.0
 
 import urllib.request
 

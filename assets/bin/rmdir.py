@@ -1,5 +1,6 @@
-# Command to remove directories
+# Command to remove directories.
 # Usage: rmdir <directory_name1> <directory_name2> ...
+# Version: 1.0.0
 
 import os
 

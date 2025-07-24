@@ -1,7 +1,6 @@
-# Command to run Python files
-# Usage: python <file.py>
-# Usage: python -m venv <path>
-# Usage: python deactivate
+# Command to run Python files.
+# Usage: python <file.py> / python -m venv <path> / python deactivate
+# Version: 1.0.0
 
 import os
 import sys
@@ -17,7 +16,7 @@ def load_current_venv():
 
     if os.path.exists(venv):
         try:
-            with open(venv, 'r') as file:
+            with open(venv, 'r', encoding='utf-8') as file:
                 data = json.load(file)
                 current_venv = data.get("current_venv")
             
@@ -36,7 +35,7 @@ def save_current_venv():
     if current_venv:
         venv_name = os.path.basename(current_venv)
 
-    with open(venv, 'w') as file:
+    with open(venv, 'w', encoding='utf-8') as file:
         json.dump({
             "current_venv": current_venv,
             "venv_name": venv_name

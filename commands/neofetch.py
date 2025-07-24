@@ -1,5 +1,6 @@
-# Command to display system information
+# Command to display system information.
 # Usage: neofetch
+# Version: 1.0.0
 
 import os
 import platform

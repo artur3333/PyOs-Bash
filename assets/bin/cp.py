@@ -1,5 +1,6 @@
-# Command to copy files or directories
+# Command to copy files or directories.
 # Usage: cp [-r] <source> <destination>
+# Version: 1.0.0
 
 import os
 import shutil

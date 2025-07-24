@@ -1,5 +1,6 @@
-# Command to change the password of the current user
+# Command to change the password of the current user.
 # Usage: passwd [<username>]
+# Version: 1.0.0
 
 import getpass
 import auth

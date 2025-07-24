@@ -1,5 +1,6 @@
-# Command to delete a user
+# Command to delete a user.
 # Usage: userdel <username>
+# Version: 1.0.0
 
 import auth
 

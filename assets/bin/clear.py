@@ -1,5 +1,6 @@
-# Command to clear the terminal screen
+# Command to clear the terminal screen.
 # Usage: clear
+# Version: 1.0.0
 
 import os
 

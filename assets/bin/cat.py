@@ -1,5 +1,6 @@
-# Command to read and display the contents of a file
+# Command to read and display the contents of a file.
 # Usage: cat <filename>
+# Version: 1.0.0
 
 def run(args, fs):
     if not args:

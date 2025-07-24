@@ -1,5 +1,6 @@
-# Command to echo text to the console or write it to a file
+# Command to echo text to the console or write it to a file.
 # Usage: echo [text] > <filename>
+# Version: 1.0.0
 
 def run(args, fs):
     if ">" in args:

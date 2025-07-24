@@ -1,6 +1,6 @@
-# Snake Package Manager commands
-# Usage: sudo snakepkg <command> <package_name>
-# Commands: install, remove, upgrade, list, available, info
+# Command line utility for Snake Package Manager.
+# Usage: sudo snakepkg <install/remove/upgrade/list/available/info> <package_name>
+# Version: 1.0.0
 
 import os
 import sys

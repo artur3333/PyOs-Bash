@@ -1,5 +1,6 @@
-# Command to execute a shell command
-# Usage: source <file>
+# Command to execute a shell command.
+# Usage: source <file_path>
+# Version: 1.0.0
 
 import os
 import json

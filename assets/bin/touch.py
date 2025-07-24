@@ -1,5 +1,6 @@
-# Command to create empty files or update timestamps
+# Command to create empty files or update timestamps.
 # Usage: touch <file1> <file2> ...
+# Version: 1.0.0
 
 import os
 

@@ -1,5 +1,6 @@
-# Command to run a command with elevated privileges
+# Command to run a command with elevated privileges.
 # Usage: sudo <command> [args...]
+# Version: 1.0.0
 
 import importlib
 import auth

@@ -37,7 +37,10 @@ def shell():
     while True:
         try:
             if not auth.get_current_user():
-                if auth.login():
+                if not auth.login():
+                    continue
+                
+                else:
                     continue
 
             command = input(fs.prompt()).strip()

@@ -1,5 +1,6 @@
-# Command to list all users
+# Command to list all users.
 # Usage: who
+# Version: 1.0.0
 
 import auth
 

@@ -1,7 +1,6 @@
-# Pip command for python package management
-# Usage: pip install <package_name> [<package_name> ...]
-# Usage: pip uninstall <package_name> [<package_name> ...]
-# Usage: pip list
+# Command pip for python package management.
+# Usage: pip install <package_name> [<package_name> ...] / pip uninstall <package_name> [<package_name> ...] / pip list
+# Version: 1.0.0
 
 import os
 import json
@@ -196,6 +195,7 @@ def list_packages():
 def run(args, fs):
     if not args:
         print("Missing arguments.")
+        return
     
     command = args[0].lower()
 

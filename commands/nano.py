@@ -1,5 +1,6 @@
-# Text editor very (not) similar to nano.
+# Command to open a text editor very (not) similar to nano.
 # Usage: nano <filename>
+# Version: 1.0.0
 
 import os
 import sys
