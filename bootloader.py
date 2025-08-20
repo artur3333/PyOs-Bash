@@ -5,6 +5,14 @@ from os_setup import setup
 
 sys.dont_write_bytecode = True
 
+if getattr(sys, 'frozen', False):
+    BASE_PATH = os.path.dirname(sys.executable)
+
+else:
+    BASE_PATH = os.path.dirname(os.path.abspath(__file__))
+
+os.chdir(BASE_PATH)
+
 FILE_SYSTEM = "fs"
 
 def load_kernel():
@@ -21,6 +29,11 @@ def load_kernel():
 
 if __name__ == "__main__":
     try:
+        if os.environ.get("PYOS_RUNNING") == "1":
+            sys.exit(0)
+        
+        os.environ["PYOS_RUNNING"] = "1"
+        
         if os.name == 'nt':
             os.system('cls')
         else:
@@ -28,7 +41,13 @@ if __name__ == "__main__":
 
         load_kernel()
         time.sleep(1)
-        exec(open(kernel_path).read())
+
+        with open(kernel_path, 'r') as file:
+            kernel_code = compile(file.read(), kernel_path, 'exec')
+        
+        kernel_globals = {"__file__": kernel_path, "__name__": "__main__"}
+
+        exec(kernel_code, kernel_globals)
 
     except FileNotFoundError as e:
         print(e)

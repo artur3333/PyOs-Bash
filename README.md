@@ -1,5 +1,7 @@
 # PyOs-Bash
 
+![PyOS](./pyos.png)
+
 A Unix-like operating system simulator written in Python. PyOS provides a shell environment (bash-like) with file system and user management with Unix-style commands.
 
 ## Features
@@ -56,7 +58,7 @@ PyOS provides 36 commands in total: 34 are installed by default during system se
 - **Dependencies**: Install via `requirements.txt`
 - **Internet connection**: internet connection for package manager features
 
-## Installation
+## Installation (or you can use the .exe release)
 1. **Clone the repository** and navigate to the project folder:
     ```bash
     git clone https://github.com/artur3333/PyOs-Bash.git
@@ -99,6 +101,11 @@ PyOs-Bash/
 ### Starting PyOS
 ```bash
 python bootloader.py
+```
+
+### Starting PyOS Release (.exe)
+```bash
+PyOS.exe
 ```
 
 ### Package Management

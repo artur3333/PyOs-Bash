@@ -4,6 +4,7 @@ import json
 import hashlib
 import getpass
 import shutil
+import sys
 
 FILE_SYSTEM = "fs"
 SYSTEM_CONFIG = os.path.join(FILE_SYSTEM, "etc", "system.conf")
@@ -12,6 +13,12 @@ SHADOW_FILE = os.path.join(FILE_SYSTEM, "etc", "shadow")
 PERMISSIONS_FILE = os.path.join(FILE_SYSTEM, "etc", "permissions.json")
 SESSIONS_FILE = os.path.join(FILE_SYSTEM, "var", "sessions.json")
 PACKAGES_FILE = os.path.join(FILE_SYSTEM, "var", "packages.json")
+
+if getattr(sys, 'frozen', False):
+    ASSETS_BASE_PATH = os.path.join(sys._MEIPASS, 'assets')
+    
+else:
+    ASSETS_BASE_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'assets')
 
 def create_file_structure():
     directories = [
@@ -43,14 +50,14 @@ def create_file_structure():
 
     print("Done.")
 
-def create_system_config(hostname):
+def create_system_config(hostname, timezone):
     config = {
         "os_name": "PyOS",
         "version": "0.1",
         "maintainer": "artur33",
         "default_shell": "bash",
         "default_editor": "nano",
-        "timezone": "UTC",
+        "timezone": timezone,
         "locale": "en_US.UTF-8",
         "hostname": hostname,
         "first_boot": False,
@@ -128,7 +135,7 @@ def setup_normal_user():
 
 def default_commands():
     print("\nSetting up default commands...")
-    source = "assets/bin"
+    source = os.path.join(ASSETS_BASE_PATH, "bin")
     destination_bin = os.path.join(FILE_SYSTEM, "bin")
     #destination_sbin = os.path.join(FILE_SYSTEM, "sbin")
     if os.path.exists(source):
@@ -142,7 +149,7 @@ def default_commands():
 
 def kernel_setup():
     print("\nSetting up kernel...")
-    source = "assets/boot/kernel.py"
+    source = os.path.join(ASSETS_BASE_PATH, "boot", "kernel.py")
     destination_boot = os.path.join(FILE_SYSTEM, "boot", "kernel.py")
     if os.path.exists(source):
         shutil.copy(source, destination_boot)
@@ -151,7 +158,7 @@ def kernel_setup():
     else:
         print("Kernel file not found. Please ensure it exists in the assets/boot directory.")
         print("Fatal error: Kernel setup failed")
-        exit(1)
+        sys.exit(1)
 
 def create_permissions_file(username):
     print("\nCreating permissions file...")
@@ -227,9 +234,10 @@ def setup():
     create_file_structure()
     kernel_setup()
     hostname = input("\nEnter hostname for this system: ").strip() or "pyos"
+    timezone = input("Enter timezone (e.g. UTC, UTC+2, UTC-5) [default: UTC]: ").strip() or "UTC"
     setup_root_user()
     username = setup_normal_user()
-    create_system_config(hostname)
+    create_system_config(hostname, timezone)
     default_commands()
     create_permissions_file(username)
     create_sessions_file()

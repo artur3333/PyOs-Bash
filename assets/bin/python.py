@@ -1,12 +1,13 @@
 # Command to run Python files.
 # Usage: python <file.py> / python -m venv <path> / python deactivate
-# Version: 1.0.0
+# Version: 1.1.0
 
 import os
 import sys
 import subprocess
 import auth
 import json
+import shutil
 
 current_venv = None
 
@@ -53,7 +54,19 @@ def create_venv(path, fs):
         return False
     
     try:
-        result = subprocess.run([sys.executable, "-m", "venv", abs_path], capture_output=True, text=True)
+        python_exe = get_system_python()
+
+        if python_exe is None:
+            print("ERROR: No system Python installation found!")
+            print("Virtual environments require Python to be installed on the system.")
+            print("Please install Python from https://python.org")
+            print("\nNote: You can still run Python files without a virtual environment.")
+            return False
+        
+        print(f"Creating virtual environment using system Python...")
+
+        result = subprocess.run([python_exe, "-m", "venv", abs_path], capture_output=True, text=True)
+
         if result.returncode != 0:
             print(f"Error creating virtual environment: {result.stderr}")
             return False
@@ -87,7 +100,9 @@ def deactivate_venv(fs):
     
 def get_python():
     if current_venv:
-        path = os.path.join(current_venv, "Scripts", "python.exe")
+        if not getattr(sys, 'frozen', False):
+            path = os.path.join(current_venv, "Scripts", "python.exe")
+
         if os.path.exists(path):
             return path
         
@@ -96,6 +111,24 @@ def get_python():
             return path
     
     return sys.executable
+
+def get_system_python():
+    pys = ['python', 'python3', 'python.exe']
+
+    for py in pys:
+        python_exe = shutil.which(py)
+        if python_exe:
+            if "WindowsApps" not in python_exe:
+                if "Microsoft" not in python_exe:
+                    try:
+                        result = subprocess.run([python_exe, "--version"], capture_output=True, text=True, timeout=5)
+                        if result.returncode == 0 and "Python" in result.stdout:
+                            return python_exe
+                    
+                    except:
+                        continue
+    
+    return None
 
 def run_python_file(file_path, fs, args=None):
     if args is None:
@@ -116,27 +149,73 @@ def run_python_file(file_path, fs, args=None):
         return False
     
     try:
-        py = get_python()
-        command = [py, abs_path] + args
-        env = os.environ.copy()
-
         if current_venv:
-            env["VIRTUAL_ENV"] = current_venv
-            scripts_path = os.path.join(current_venv, 'Scripts')
-            bin_path = os.path.join(current_venv, 'bin')
+            venv_python = None
 
-            if os.path.exists(scripts_path):
-                env['PATH'] = scripts_path + os.pathsep + env.get('PATH', '')
+            venv_scripts = os.path.join(current_venv, 'Scripts', 'python.exe')
 
-            elif os.path.exists(bin_path):
-                env['PATH'] = bin_path + os.pathsep + env.get('PATH', '')
+            if os.path.exists(venv_scripts):
+                venv_python = venv_scripts
 
-        result = subprocess.run(command, env=env)
+            else:
+                venv_bin = os.path.join(current_venv, 'bin', 'python')
+                if os.path.exists(venv_bin):
+                    venv_python = venv_bin
+
+            if venv_python:
+                command = [venv_python, abs_path] + args
+                env = os.environ.copy()
+                env['VIRTUAL_ENV'] = current_venv
+                venv_dir = os.path.dirname(venv_python)
+                env['PATH'] = venv_dir + os.pathsep + env.get('PATH', '')
+
+                result = subprocess.run(command, env=env)
+                return result.returncode == 0
+            
+            else:
+                print("ERROR: Virtual environment Python interpreter not found!")
+                return False
+        
+        if getattr(sys, 'frozen', False):
+            return run_python_in(abs_path, args)
+        
+        py = get_python()
+
+        if py is None:
+            print("ERROR: Python interpreter not found!")
+            return False
+        
+        command = [py, abs_path] + args
+        result = subprocess.run(command)
         return result.returncode == 0
-    
+        
     except Exception as e:
         print(f"Error running Python file: {e}")
         return False
+
+def run_python_in(file_path, args):
+    try:
+        old_argv = sys.argv
+        sys.argv = [file_path] + args
+
+        with open(file_path, 'r', encoding='utf-8') as file:
+            code = file.read()
+
+        file_globals = {'__file__': file_path, '__name__': '__main__', '__builtins__': __builtins__}
+
+        exec(code, file_globals)
+
+        return True
+    
+    except SystemExit as e:
+        return e.code == 0
+    
+    except Exception as e:
+        print(f"Error executing Python code: {e}")
+        return False
+
+    finally:
+        sys.argv = old_argv
 
 def run(args, fs):
     load_current_venv()
