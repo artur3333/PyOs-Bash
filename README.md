@@ -30,8 +30,8 @@ PyOS provides 36 commands in total: 34 are installed by default during system se
 | `man` | Display manual pages | `man <command>` |
 | `mkdir` | Create directories | `mkdir <directory_name1> <directory_name2> …` |
 | `mv` | Move/rename files | `mv <source> <destination>` |
-| `nano` | Text editor | `nano <filename>` |
-| `neofetch` | Display system information | `neofetch` |
+| `nano*` | Text editor | `nano <filename>` |
+| `neofetch*` | Display system information | `neofetch` |
 | `passwd` | Change user password | `passwd [<username>]` |
 | `ping` | Network connectivity test | `ping [-c <count>] <hostname>` |
 | `pip` | Python package manager | `pip install/uninstall/list <package_name>` |
@@ -52,6 +52,8 @@ PyOS provides 36 commands in total: 34 are installed by default during system se
 | `wget` | Download files | `wget [-O <output_file>, -P <directory>, -q] <url>` |
 | `who` | Show logged in users | `who` |
 | `whoami` | Display current username | `whoami` |
+
+\* These commands (`nano` and `neofetch`) are not pre-installed. They must be installed via the package manager (`snakepkg`) first.
 
 ## Requirements
 - **Python**: 3.6 or higher
