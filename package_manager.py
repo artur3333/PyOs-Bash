@@ -6,7 +6,7 @@ import hashlib
 import shutil
 import auth
 
-PACKAGE_SERVER = "https://artur33.xyz/pyos/packages"
+PACKAGE_SERVER = "https://artur33.dev/pyos/packages"
 PACKAGE_JSON_FILE = os.path.join("fs", "var", "packages.json")
 BIN_DIR = os.path.join("fs", "bin")
 TEMP_DIR = os.path.join("fs", "tmp")
