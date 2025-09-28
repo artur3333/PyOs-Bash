@@ -53,7 +53,7 @@ def create_file_structure():
 def create_system_config(hostname, timezone):
     config = {
         "os_name": "PyOS",
-        "version": "0.1",
+        "version": "0.1.1",
         "maintainer": "artur33",
         "default_shell": "bash",
         "default_editor": "nano",
